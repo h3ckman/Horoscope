@@ -2,23 +2,33 @@
 <resources>
 
     <string-array name="ns_menu_items">
-        <item>ns_menu_snippet1</item>
-        <item>ns_menu_snippet2</item>
-        <item>ns_menu_snippet3</item>
-        <item>ns_menu_snippet4</item>
-        <item>ns_menu_snippet5</item>
-        <item>ns_menu_snippet6</item>
-        <item>ns_menu_snippet7</item>
+        <item>menu_aries</item>
+        <item>menu_taurus</item>
+        <item>menu_gemini</item>
+        <item>menu_cancer</item>
+        <item>menu_leo</item>
+        <item>menu_virgo</item>
+        <item>menu_libra</item>
+        <item>menu_scorpio</item>
+        <item>menu_sagittarius</item>
+        <item>menu_capricorn</item>
+        <item>menu_aquarius</item>
+        <item>menu_pisces</item>
     </string-array>
 
     <array name="ns_menu_items_icon">
-        <item>ic_action_settings</item>
-        <item>ic_save</item>
-        <item>ic_action_add</item>
-        <item>ic_launcher</item>
-        <item>ic_action_add</item>
-        <item>ic_action_settings</item>
-        <item>ic_launcher</item>
+        <item>ic_aries</item>
+        <item>ic_taurus</item>
+        <item>ic_gemini</item>
+        <item>ic_cancer</item>
+        <item>ic_leo</item>
+        <item>ic_virgo</item>
+        <item>ic_libra</item>
+        <item>ic_scorpio</item>
+        <item>ic_sagittarius</item>
+        <item>ic_capricorn</item>
+        <item>ic_aquarius</item>
+        <item>ic_pisces</item>
     </array>
 
 </resources>
