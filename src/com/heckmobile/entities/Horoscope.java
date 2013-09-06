@@ -7,11 +7,13 @@ import android.util.Log;
 
 public class Horoscope implements Serializable{
 	
+	public int id;
 	public String sign;
 	public Date date;
 	public String description;
 	
-	public Horoscope(String sign, Date date, String description) {
+	public Horoscope(int id, String sign, Date date, String description) {
+		this.id = id;
 		this.sign = sign;
 		this.date = date;
 		this.description = description;

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent" >
+
+    <TextView
+        android:id="@+id/help_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/image"
+        android:gravity="center"
+        android:paddingTop="15dp"
+        android:text="@string/help_title"
+        android:textSize="28sp" />
+
+    <TextView
+        android:id="@+id/help_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/help_title"
+        android:paddingLeft="15dp"
+        android:paddingRight="15dp"
+        android:paddingTop="20dp"
+        android:text="@string/help_description"
+        android:textSize="18sp" />
+
+    <Spinner
+        android:id="@+id/help_dropdown"
+        android:layout_width="300dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="25dp"
+        android:layout_below="@+id/help_description"
+        android:entries="@array/sign_dates"
+        android:prompt="@string/sign_prompt" 
+        android:layout_centerHorizontal="true"/>
+    
+    <Button
+        android:id="@+id/help_button"
+        android:layout_width="250dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="22dp"
+        android:padding="5dp"
+        android:text="Save"
+        android:layout_below="@+id/help_dropdown" 
+        android:layout_centerHorizontal="true"/>
+
+</RelativeLayout>

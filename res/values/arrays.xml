@@ -30,13 +30,32 @@
         <item>ic_aquarius</item>
         <item>ic_pisces</item>
     </array>
-        
-	<string-array name="ns_menu_items_2">
+
+    <string-array name="ns_menu_items_2">
+        <item>action_favorites</item>
+        <item>action_help</item>
         <item>action_settings</item>
     </string-array>
 
-	<array name="ns_menu_items_icon_2">
+    <array name="ns_menu_items_icon_2">
+        <item>ic_action_favorites</item>
+        <item>ic_action_help</item>
         <item>ic_action_settings</item>
-        </array>
-	
+    </array>
+
+    <string-array name="sign_dates">
+        <item name="date_aries">Aries 3/21–4/19</item>
+        <item name="date_taurus">Taurus 4/20–5/20</item>
+        <item name="date_gemini">Gemini 5/21–6/21</item>
+        <item name="date_cancer">Cancer 6/22–7/22</item>
+        <item name="date_leo">Leo 7/23–8/22</item>
+        <item name="date_virgo">Virgo 8/23–9/22</item>
+        <item name="date_libra">Libra 9/23–10/22</item>
+        <item name="date_scorpio">Scorpio 10/23–11/21</item>
+        <item name="date_sagittarius">Sagittarius 11/22–12/21</item>
+        <item name="date_capricorn">Capricorn 12/22–1/19</item>
+        <item name="date_aquarius">Aquarius 1/20–2/18</item>
+        <item name="date_pisces">Pisces 2/19–3/20</item>
+    </string-array>
+
 </resources>

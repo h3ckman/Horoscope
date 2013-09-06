@@ -2,20 +2,21 @@
 <resources>
 
     <string name="app_name">Horoscope</string>
+    <string name="action_home">Home</string>
+    <string name="action_help">Help</string>
+    <string name="action_favorites">Favorites</string>
 	<string name="action_settings">Settings</string>
 	<string name="action_preferences">Preferences</string>
     <string name="action_save">Save</string>
     <string name="action_refresh">Refresh</string>
     <string name="drawer_text">Choose your sign from the menu.</string>
-    
+    <string name="sign_prompt">What\'s Your Sign?</string>
     <string name="ns_menu_main_header">Signs</string>
     <string name="ns_menu_main_header2">Other</string>
     
     <string name="ns_menu_open">Horoscope</string>
     <string name="ns_menu_close">Horoscope</string>
     
-    <string name="menu_aquarius">Aquarius</string>
-    <string name="menu_pisces">Pisces</string>
     <string name="menu_aries">Aries</string>
     <string name="menu_taurus">Taurus</string>
     <string name="menu_gemini">Gemini</string>
@@ -26,4 +27,14 @@
     <string name="menu_scorpio">Scorpio</string>
     <string name="menu_sagittarius">Sagittarius</string>
     <string name="menu_capricorn">Capricorn</string>
+    <string name="menu_aquarius">Aquarius</string>
+    <string name="menu_pisces">Pisces</string>
+    
+    
+    
+    <string name="help_title">Welcome!</string>
+    <string name="help_description">Thanks for downloading Horoscope by HeckMobile! This app focuses on simplicity and functionality without any of the frills, annoying ads, underlying motives, and bizarre permissions that come with similar apps. Everything stays themed as close to Google\'s defaults as possible. 
+\n\nTo start using the app, let\'s start by choosing your birthday. Using the tropical dates, the app will choose your zodiac sign. After doing so, each time you launch the app it will default to your specific horoscope. 
+Settings take effect upon restart. To navigate, you may also select any sign from the navigation drawer on the left. This can be done by either tapping on the app icon at the top or draggin your finger from the left edge of the screen. 
+We hope you enjoy our app!</string>
 </resources>

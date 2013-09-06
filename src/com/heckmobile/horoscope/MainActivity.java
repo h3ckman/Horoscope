@@ -9,9 +9,14 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
+
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.ProgressDialog;
@@ -23,7 +28,9 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -45,13 +52,15 @@ public class MainActivity extends Activity {
 	static final String KEY_SIGN = "title";
 	static final String KEY_DATE = "pubDate";
 	static final String KEY_DESC = "description";
+	static final String PREFS_NAME = "sign";
 
 	private ListView mDrawerList;
 	private DrawerLayout mDrawer;
 	private CustomActionBarDrawerToggle mDrawerToggle;
 	private String[] menuItems;
 	ProgressDialog pDialog;
-	HashMap<String, Horoscope> horoscopeMap = new HashMap<String, Horoscope>();
+	public static HashMap<String, Horoscope> horoscopeMap = new HashMap<String, Horoscope>();
+	SharedPreferences settings;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -74,16 +83,35 @@ public class MainActivity extends Activity {
 		mDrawerToggle = new CustomActionBarDrawerToggle(this, mDrawer);
 		mDrawer.setDrawerListener(mDrawerToggle);
 
-		/****************************************************/
+		if(!haveInternet(this)) {
+			if(horoscopeMap.isEmpty()) {
+				selectItem(getResources().getString(R.string.action_help), -1);
+				showSettingsAlert();
+			}
+		}
+		if(haveInternet(this)) {
+			LoadHoroscopes loadHoroscopes = new LoadHoroscopes(this);
+			loadHoroscopes.execute();
+		}
 
-		LoadHoroscopes loadHoroscopes = new LoadHoroscopes(this);
-		loadHoroscopes.execute();
+		settings = getSharedPreferences(PREFS_NAME, 0);
+		String mySign = settings.getString(PREFS_NAME, "");
 
-		/****************************************************/
+		// If first launch, load help
+		if (savedInstanceState == null && mySign.equals("")) {
+			selectItem(getResources().getString(R.string.action_help), -1);
+		}
+
+		// If user has set birthday, load their sign
+		else if (haveInternet(this) && !mySign.isEmpty()){
+			Horoscope h = horoscopeMap.get(mySign);
+			selectItem(h.sign, h.id);
+		}
+
 	}
 
 	/**
-	 * Background Async Task to load Google places
+	 * Background Async Task to load horoscopes
 	 * */
 	class LoadHoroscopes extends AsyncTask {
 
@@ -140,7 +168,7 @@ public class MainActivity extends Activity {
 					// Convert the String date to Date
 					Date formatDate = new SimpleDateFormat("EEE, dd MMM yyyy", Locale.ENGLISH).parse(date);
 
-					Horoscope horoscope = new Horoscope(sign, formatDate, description);
+					Horoscope horoscope = new Horoscope(i, sign, formatDate, description);
 
 					// Store in HashMap
 					horoscopeMap.put(sign, horoscope);
@@ -161,8 +189,6 @@ public class MainActivity extends Activity {
 
 		protected void onPostExecute(Object result) {
 			pDialog.dismiss();
-			String temp = horoscopeMap.get("Scorpio").description;
-			Log.w("Pisces", temp);
 		}
 	}
 
@@ -313,6 +339,9 @@ public class MainActivity extends Activity {
 		{
 			String arrayItem = getResources().getStringArray(R.array.ns_menu_items)[position-1]; // Throws out of bounds exception if not sign
 
+			Log.w("item", item);
+			Log.w("pos", ""+position);
+
 			// Get the horoscope for the sign
 			Horoscope selected = horoscopeMap.get(item);
 
@@ -326,15 +355,19 @@ public class MainActivity extends Activity {
 
 			getActionBar().setSubtitle(item);
 		}
-		
+
 		// If not a sign, launch settings
 		catch(ArrayIndexOutOfBoundsException e) {
 			Log.w("Settings", "Settings clicked");
+			Fragment fragment = new HelpFragment();
+			Bundle args = new Bundle();
+			fragment.setArguments(args);
+
+			FragmentManager fragmentManager = getFragmentManager();
+			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
+
+			getActionBar().setSubtitle(item);
 		}
-
-
-		
-
 
 
 		// Highlight the selected item and close the drawer
@@ -344,4 +377,51 @@ public class MainActivity extends Activity {
 		mDrawer.closeDrawer(mDrawerList);
 	}
 
+	public static boolean haveInternet(Context ctx) {
+
+		NetworkInfo info = (NetworkInfo) ((ConnectivityManager) ctx
+				.getSystemService(Context.CONNECTIVITY_SERVICE)).getActiveNetworkInfo();
+
+		if (info == null || !info.isConnected()) {
+			return false;
+		}
+		if (info.isRoaming()) {
+			// here is the roaming option you can change it if you want to
+			// disable internet while roaming, just return false
+			return false;
+		}
+		return true;
+	}
+
+	public void showSettingsAlert() {
+		AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
+
+		// Setting Dialog Title
+		alertDialog.setTitle("Problem Loading Horoscopes");
+
+		// Setting Dialog Message
+		alertDialog
+		.setMessage("There was a problem loading today's horoscopes and you have not loaded any previously. Would you like to go to your settings?");
+
+		// On pressing Settings button
+		alertDialog.setPositiveButton("Settings",
+				new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				Intent intent = new Intent(
+						Settings.ACTION_WIFI_SETTINGS);
+				startActivity(intent);
+			}
+		});
+
+		// on pressing cancel button
+		alertDialog.setNegativeButton("Exit",
+				new DialogInterface.OnClickListener() {
+			public void onClick(DialogInterface dialog, int which) {
+				System.exit(0);
+			}
+		});
+
+		// Showing Alert Message
+		alertDialog.show();
+	}
 }
