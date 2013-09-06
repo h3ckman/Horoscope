@@ -12,9 +12,10 @@ import android.widget.TextView;
 public class NsMenuAdapter extends ArrayAdapter<NsMenuItemModel> {
 
 	/*
-	 * public NsMenuAdapter(Context context, int resource, int
-	 * textViewResourceId, String[] objects) { super(context,
-	 * R.layout.ns_menu_row, textViewResourceId, objects); }
+	 public NsMenuAdapter(Context context, int resource, int
+	 textViewResourceId, String[] objects) { 
+		 super(context, R.layout.ns_menu_row, textViewResourceId, objects); 
+		 }
 	 */
 
 	public NsMenuAdapter(Context context) {
@@ -51,12 +52,12 @@ public class NsMenuAdapter extends ArrayAdapter<NsMenuItemModel> {
 	public static class ViewHolder {
 		public final TextView textHolder;
 		public final ImageView imageHolder;
-		public final TextView textCounterHolder;
+		// public final TextView textCounterHolder;
 
-		public ViewHolder(TextView text1, ImageView image1,TextView textcounter1) {
+		public ViewHolder(TextView text1, ImageView image1 /*,TextView textcounter1*/) {
 			this.textHolder = text1;
 			this.imageHolder = image1;
-			this.textCounterHolder=textcounter1;
+			// this.textCounterHolder=textcounter1;
 		}
 	}
 
@@ -67,16 +68,17 @@ public class NsMenuAdapter extends ArrayAdapter<NsMenuItemModel> {
 		View view = convertView;
 
 		if (view == null) {
-			int layout = R.layout.ns_menu_row_counter;
+			int layout = R.layout.ns_menu_row;
 			if (item.isHeader)
 				layout = R.layout.ns_menu_row_header;
 
 			view = LayoutInflater.from(getContext()).inflate(layout, null);
 
 			TextView text1 = (TextView) view.findViewById(R.id.menurow_title);
-			ImageView image1 = (ImageView) view.findViewById(R.id.menurow_icon);
-			TextView textcounter1 = (TextView) view.findViewById(R.id.menurow_counter);
-			view.setTag(new ViewHolder(text1, image1,textcounter1));
+			ImageView image1 = (ImageView) view.findViewById(R.id.menurow_icon);			
+			// TextView textcounter1 = (TextView) view.findViewById(R.id.menurow_counter);
+			// view.setTag(new ViewHolder(text1, image1,textcounter1));
+			view.setTag(new ViewHolder(text1, image1));
 		}
 
 		if (holder == null && view != null) {
@@ -92,6 +94,7 @@ public class NsMenuAdapter extends ArrayAdapter<NsMenuItemModel> {
 	    	if (holder.textHolder != null)
 				holder.textHolder.setText(item.title);
 
+	    	/*
 	    	if (holder.textCounterHolder != null){
 	    		if (item.counter > 0){
 	    			holder.textCounterHolder.setVisibility(View.VISIBLE);
@@ -100,6 +103,7 @@ public class NsMenuAdapter extends ArrayAdapter<NsMenuItemModel> {
 	    			holder.textCounterHolder.setVisibility(View.GONE);
 				}
 			}
+	    	 */
 
 	        if (holder.imageHolder != null) {
 				if (item.iconRes > 0) {

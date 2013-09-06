@@ -12,11 +12,14 @@
 
         <ImageView
             android:id="@+id/menurow_icon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_marginLeft="12dp"
             android:layout_marginRight="12dp"
-            android:src="@drawable/ic_launcher" />
+             android:layout_marginTop="5dp"
+            android:src="@drawable/ic_launcher" 
+            android:alpha=".70"
+            />
 
         <TextView
             android:id="@+id/menurow_title"

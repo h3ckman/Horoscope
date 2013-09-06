@@ -30,5 +30,13 @@
         <item>ic_aquarius</item>
         <item>ic_pisces</item>
     </array>
+        
+	<string-array name="ns_menu_items_2">
+        <item>action_settings</item>
+    </string-array>
 
+	<array name="ns_menu_items_icon_2">
+        <item>ic_action_settings</item>
+        </array>
+	
 </resources>

@@ -12,6 +12,8 @@ import org.w3c.dom.Node;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
+import android.app.Fragment;
+import android.app.FragmentManager;
 import android.app.ProgressDialog;
 import android.text.Html;
 import android.util.Log;
@@ -37,7 +39,7 @@ public class MainActivity extends Activity {
 
 	// URL to pull data from
 	static final String URL = "http://www.astrology.com/horoscopes/daily-extended.rss";
-	
+
 	// XML node keys
 	static final String KEY_ITEM = "item"; // parent node
 	static final String KEY_SIGN = "title";
@@ -59,6 +61,7 @@ public class MainActivity extends Activity {
 		// enable ActionBar app icon to behave as action to toggle nav drawer
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		getActionBar().setHomeButtonEnabled(true);
+		getActionBar().setSubtitle("Your Daily Horoscope");
 
 		mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 
@@ -119,30 +122,31 @@ public class MainActivity extends Activity {
 				for (int i = 0; i < nl.getLength(); i++) {
 
 					// Creating new HashMap
-					
+
 					Element e = (Element) nl.item(i);
 
 					// Get each sign's information
 					String sign = parser.getValue(e, KEY_SIGN); // title child value
 					String date = parser.getValue(e, KEY_DATE); // date child value
 					String description = parser.getValue(e, KEY_DESC); // description child value
-					
+
 					// Get the name of the sign (trim the rest)
 					sign = sign.substring(0, sign.indexOf(" "));
-					
-					// Trim the description to emit links
+
+					// Trim the description to emit links and remove html tags
 					description = description.substring(0, description.indexOf("<p>More horoscopes!"));
-					
+					description = Html.fromHtml(description).toString();
+
 					// Convert the String date to Date
 					Date formatDate = new SimpleDateFormat("EEE, dd MMM yyyy", Locale.ENGLISH).parse(date);
-					
+
 					Horoscope horoscope = new Horoscope(sign, formatDate, description);
-					
+
 					// Store in HashMap
 					horoscopeMap.put(sign, horoscope);
 				}
-				
-				
+
+
 
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -158,7 +162,7 @@ public class MainActivity extends Activity {
 		protected void onPostExecute(Object result) {
 			pDialog.dismiss();
 			String temp = horoscopeMap.get("Scorpio").description;
-			 Log.w("Pisces", temp);
+			Log.w("Pisces", temp);
 		}
 	}
 
@@ -191,6 +195,26 @@ public class MainActivity extends Activity {
 		}
 
 		mAdapter.addHeader(R.string.ns_menu_main_header2);
+
+		// Add second block
+
+		menuItems = getResources().getStringArray(
+				R.array.ns_menu_items_2);
+		menuItemsIcon = getResources().getStringArray(
+				R.array.ns_menu_items_icon_2);
+
+		res = 0;
+		for (String item : menuItems) {
+
+			int id_title = getResources().getIdentifier(item, "string",
+					this.getPackageName());
+			int id_icon = getResources().getIdentifier(menuItemsIcon[res],
+					"drawable", this.getPackageName());
+
+			NsMenuItemModel mItem = new NsMenuItemModel(id_title, id_icon);
+			mAdapter.addItem(mItem);
+			res++;
+		}
 
 		mDrawerList = (ListView) findViewById(R.id.drawer);
 		if (mDrawerList != null)
@@ -225,7 +249,7 @@ public class MainActivity extends Activity {
 	public boolean onPrepareOptionsMenu(Menu menu) {
 		// If the nav drawer is open, hide action items related to the content view
 		boolean drawerOpen = mDrawer.isDrawerOpen(mDrawerList);
-		menu.findItem(R.id.action_save).setVisible(!drawerOpen);
+		menu.findItem(R.id.action_refresh).setVisible(!drawerOpen);
 		return super.onPrepareOptionsMenu(menu);
 	}
 
@@ -272,30 +296,52 @@ public class MainActivity extends Activity {
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position,
 				long id) {
-			
-			// Highlight the selected item and close the drawer
-			mDrawerList.setItemChecked(position, true);
-			
-			// Get the name of the selected sign
-			String sign = ((TextView) view
-					.findViewById(R.id.menurow_title)).getText().toString();
-			String text= "You clicked on " + sign;
-			Toast.makeText(MainActivity.this, text , Toast.LENGTH_LONG).show();
-			
-			// Close the drawer
-			mDrawer.closeDrawer(mDrawerList);
-			
-			// Get the horoscope for the sign
-			Horoscope selected = horoscopeMap.get(sign);
-			
-			// Starting new intent
-			Intent in = new Intent(view.getContext(), HoroscopeActivity.class);
 
-			// Sending place reference id to single place activity
-			in.putExtra("Horoscope", selected);
-			startActivity(in);
+			// Get the name of the selected sign
+			String item = ((TextView) view
+					.findViewById(R.id.menurow_title)).getText().toString();
+
+			selectItem(item, position);
 		}
 
+	}
+
+	private void selectItem(String item, int position) {
+
+		// Check if clicked item is a sign
+		try
+		{
+			String arrayItem = getResources().getStringArray(R.array.ns_menu_items)[position-1]; // Throws out of bounds exception if not sign
+
+			// Get the horoscope for the sign
+			Horoscope selected = horoscopeMap.get(item);
+
+			Fragment fragment = new HoroscopeFragment();
+			Bundle args = new Bundle();
+			args.putSerializable(HoroscopeFragment.ARG_HOROSCOPE, selected);
+			fragment.setArguments(args);
+
+			FragmentManager fragmentManager = getFragmentManager();
+			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
+
+			getActionBar().setSubtitle(item);
+		}
+		
+		// If not a sign, launch settings
+		catch(ArrayIndexOutOfBoundsException e) {
+			Log.w("Settings", "Settings clicked");
+		}
+
+
+		
+
+
+
+		// Highlight the selected item and close the drawer
+		mDrawerList.setItemChecked(position, true);
+
+		// Close the drawer
+		mDrawer.closeDrawer(mDrawerList);
 	}
 
 }
