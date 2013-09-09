@@ -1,7 +1,18 @@
 package com.heckmobile.horoscope;
 
 import com.heckmobile.entities.Horoscope;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Locale;
@@ -17,6 +28,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.ProgressDialog;
@@ -32,9 +44,11 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.drawable.ColorDrawable;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -58,56 +72,97 @@ public class MainActivity extends Activity {
 	private DrawerLayout mDrawer;
 	private CustomActionBarDrawerToggle mDrawerToggle;
 	private String[] menuItems;
-	ProgressDialog pDialog;
 	public static HashMap<String, Horoscope> horoscopeMap = new HashMap<String, Horoscope>();
+	public static ArrayList<HashMap<String, Horoscope>> entryList = new ArrayList<HashMap<String, Horoscope>>();
+	ProgressDialog pDialog;
 	SharedPreferences settings;
+	String userSign;
+	boolean firstLaunch;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.drawer_layout);
 
-		// enable ActionBar app icon to behave as action to toggle nav drawer
+		// Enable ActionBar app icon to behave as action to toggle nav drawer
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		getActionBar().setHomeButtonEnabled(true);
 		getActionBar().setSubtitle("Your Daily Horoscope");
 
 		mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 
-		// set a custom shadow that overlays the main content when the drawer
+		// Set a custom shadow that overlays the main content when the drawer
 		// opens
-
 		mDrawer.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
 
+		// Initialize drawer
 		_initMenu();
 		mDrawerToggle = new CustomActionBarDrawerToggle(this, mDrawer);
 		mDrawer.setDrawerListener(mDrawerToggle);
 
-		if(!haveInternet(this)) {
-			if(horoscopeMap.isEmpty()) {
-				selectItem(getResources().getString(R.string.action_help), -1);
+		// Check if first run
+		settings = getSharedPreferences(PREFS_NAME, 0);
+		firstLaunch = settings.getBoolean("firstrun", true);
+		if (firstLaunch) {
+			selectItem(getResources().getString(R.string.action_help), -1);
+			onCoachMark();
+			if(haveInternet(this)) {
+				LoadHoroscopes loadHoroscopes = new LoadHoroscopes(this);
+				loadHoroscopes.execute();
+			}
+			else {
 				showSettingsAlert();
 			}
 		}
-		if(haveInternet(this)) {
-			LoadHoroscopes loadHoroscopes = new LoadHoroscopes(this);
-			loadHoroscopes.execute();
+		
+		// If not first run, load stuff
+		else {
+			// Load user and entries
+			Horoscope h;
+			getHoroscopeData();
+
+			DateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy");
+			//get current date time with Date()
+			Date date = new Date();
+			
+			// If the saved horoscopes = today's date, don't refresh
+			if(!(dateFormat.format(horoscopeMap.get("Pisces").date).equals(dateFormat.format(date)))) {
+				if(haveInternet(this)) {
+					LoadHoroscopes loadHoroscopes = new LoadHoroscopes(this);
+					loadHoroscopes.execute();
+				}
+			}
+
+			if(!userSign.isEmpty()) {
+				h = horoscopeMap.get(userSign);
+				selectItem(h.sign, h.id);
+			}
+			else {
+				h = horoscopeMap.get("Scorpio");
+				selectItem(h.sign, h.id);
+			}			
 		}
+	}
 
-		settings = getSharedPreferences(PREFS_NAME, 0);
-		String mySign = settings.getString(PREFS_NAME, "");
+	private void getHoroscopeData() {
+		// Get shared preferences (user's sign)
+		userSign = settings.getString(PREFS_NAME, "");
 
-		// If first launch, load help
-		if (savedInstanceState == null && mySign.equals("")) {
-			selectItem(getResources().getString(R.string.action_help), -1);
+		// Get horoscope entries
+		File file = new File(this.getFilesDir(),"entryList");
+		try {
+			FileInputStream fis = new FileInputStream(file);
+			ObjectInputStream ois = new ObjectInputStream(fis);
+			entryList = (ArrayList<HashMap<String, Horoscope>>) ois.readObject();
+			ois.close();
+			
+			horoscopeMap = entryList.get(entryList.size()-1);
+			Log.w("Entry List Read", entryList.get(0).get("Pisces").description);
 		}
-
-		// If user has set birthday, load their sign
-		else if (haveInternet(this) && !mySign.isEmpty()){
-			Horoscope h = horoscopeMap.get(mySign);
-			selectItem(h.sign, h.id);
+		catch(Exception e) {
+			Log.e("No Data", "No stored data to retrieve");
 		}
-
+		
 	}
 
 	/**
@@ -128,9 +183,9 @@ public class MainActivity extends Activity {
 		protected void onPreExecute() {
 			super.onPreExecute();
 			pDialog.setMessage(Html
-					.fromHtml("<b>Loading</b><br/>Please Wait..."));
+					.fromHtml("<b>Loading Horoscopes</b><br/>Please Wait..."));
 			pDialog.setIndeterminate(false);
-			pDialog.setCancelable(false);
+			pDialog.setCancelable(true);
 			pDialog.show();
 		}
 
@@ -138,46 +193,57 @@ public class MainActivity extends Activity {
 		 * Get all Places as JSON file
 		 * */
 		protected String doInBackground(Object... args) {
+			if(haveInternet(this.context)) {
+				try {
+					XmlParser parser = new XmlParser();
+					String xml = parser.getXmlFromUrl(URL); // getting XML
+					Document doc = parser.getDomElement(xml); // getting DOM element
 
-			try {
-				XmlParser parser = new XmlParser();
-				String xml = parser.getXmlFromUrl(URL); // getting XML
-				Document doc = parser.getDomElement(xml); // getting DOM element
+					NodeList nl = doc.getElementsByTagName(KEY_ITEM);
 
-				NodeList nl = doc.getElementsByTagName(KEY_ITEM);
+					// Looping through all item nodes <item>
+					for (int i = 0; i < nl.getLength(); i++) {
 
-				// Looping through all item nodes <item>
-				for (int i = 0; i < nl.getLength(); i++) {
+						Element e = (Element) nl.item(i);
 
-					// Creating new HashMap
+						// Get each sign's information
+						String sign = parser.getValue(e, KEY_SIGN); // title child value
+						String date = parser.getValue(e, KEY_DATE); // date child value
+						String description = parser.getValue(e, KEY_DESC); // description child value
 
-					Element e = (Element) nl.item(i);
+						// Get the name of the sign (trim the rest)
+						sign = sign.substring(0, sign.indexOf(" "));
 
-					// Get each sign's information
-					String sign = parser.getValue(e, KEY_SIGN); // title child value
-					String date = parser.getValue(e, KEY_DATE); // date child value
-					String description = parser.getValue(e, KEY_DESC); // description child value
+						// Trim the description to emit links and remove html tags
+						description = description.substring(0, description.indexOf("<p>More horoscopes!"));
+						description = Html.fromHtml(description).toString();
 
-					// Get the name of the sign (trim the rest)
-					sign = sign.substring(0, sign.indexOf(" "));
+						// Convert the String date to Date
+						Date formatDate = new SimpleDateFormat("EEE, dd MMM yyyy", Locale.ENGLISH).parse(date);
 
-					// Trim the description to emit links and remove html tags
-					description = description.substring(0, description.indexOf("<p>More horoscopes!"));
-					description = Html.fromHtml(description).toString();
+						Horoscope horoscope = new Horoscope(i, sign, formatDate, description);
 
-					// Convert the String date to Date
-					Date formatDate = new SimpleDateFormat("EEE, dd MMM yyyy", Locale.ENGLISH).parse(date);
+						// Store in HashMap
+						horoscopeMap.put(sign, horoscope);
+					}
 
-					Horoscope horoscope = new Horoscope(i, sign, formatDate, description);
+					if(entryList.size() == 2) {
+						HashMap <String, Horoscope> tempMap = entryList.remove(1);
+						entryList.clear();
+						entryList.add(tempMap);
+					}
+					entryList.add(horoscopeMap);
+					Log.w("List Size", "Entry list size = "+entryList.size());
 
-					// Store in HashMap
-					horoscopeMap.put(sign, horoscope);
+					File file = new File(this.context.getFilesDir(),"entryList");   
+					ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
+					outputStream.writeObject(entryList);
+					outputStream.flush();
+					outputStream.close();
+
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
-
-
-
-			} catch (Exception e) {
-				e.printStackTrace();
 			}
 			return null;
 		}
@@ -189,6 +255,10 @@ public class MainActivity extends Activity {
 
 		protected void onPostExecute(Object result) {
 			pDialog.dismiss();
+			if(!horoscopeMap.isEmpty()) {
+				settings.edit().putBoolean("firstrun", false).commit();
+				firstLaunch=false;
+			}	
 		}
 	}
 
@@ -327,9 +397,13 @@ public class MainActivity extends Activity {
 			String item = ((TextView) view
 					.findViewById(R.id.menurow_title)).getText().toString();
 
-			selectItem(item, position);
+			if(horoscopeMap.isEmpty()) {
+				showSettingsAlert();
+			}
+			else {
+				selectItem(item, position);
+			}
 		}
-
 	}
 
 	private void selectItem(String item, int position) {
@@ -361,6 +435,7 @@ public class MainActivity extends Activity {
 			Log.w("Settings", "Settings clicked");
 			Fragment fragment = new HelpFragment();
 			Bundle args = new Bundle();
+			args.putSerializable("horoscopeMap", horoscopeMap);
 			fragment.setArguments(args);
 
 			FragmentManager fragmentManager = getFragmentManager();
@@ -401,7 +476,7 @@ public class MainActivity extends Activity {
 
 		// Setting Dialog Message
 		alertDialog
-		.setMessage("There was a problem loading today's horoscopes and you have not loaded any previously. Would you like to go to your settings?");
+		.setMessage("There may be a problem with your Wi-Fi or data connection. Would you like to go to your settings?");
 
 		// On pressing Settings button
 		alertDialog.setPositiveButton("Settings",
@@ -423,5 +498,26 @@ public class MainActivity extends Activity {
 
 		// Showing Alert Message
 		alertDialog.show();
+	}
+	
+	public void onCoachMark(){
+
+	    //final Dialog dialog = new Dialog(this);
+	    final Dialog dialog = new Dialog(this, android.R.style.Theme_Translucent_NoTitleBar);
+
+	    dialog.setContentView(R.layout.coach_mark);
+	    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+	    
+	    
+	    dialog.setCanceledOnTouchOutside(true);
+	    //for dismissing anywhere you touch
+	    View masterView = dialog.findViewById(R.id.coach_mark_master_view);
+	    masterView.setOnClickListener(new View.OnClickListener() {
+	        @Override
+	        public void onClick(View view) {
+	            dialog.dismiss();
+	        }
+	    });
+	    dialog.show();
 	}
 }

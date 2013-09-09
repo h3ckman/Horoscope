@@ -29,6 +29,7 @@ public class XmlParser {
         String xml = null;
  
         try {
+        	
             // defaultHttpClient
             DefaultHttpClient httpClient = new DefaultHttpClient();
             HttpPost httpPost = new HttpPost(url);

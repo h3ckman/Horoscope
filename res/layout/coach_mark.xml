@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/coach_mark_master_view"
+    android:layout_width="fill_parent"
+    android:layout_height="fill_parent"
+    android:background="#ac000000" >
+
+    <ImageView
+        android:id="@+id/arrowTop"
+        android:layout_width="104dp"
+        android:layout_height="100dp"
+        android:alpha=".65"
+        android:paddingLeft="50dp"
+        android:paddingTop="15dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/arrow1" />
+
+    <TextView
+        android:id="@+id/label_nav"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/arrowTop"
+        android:fontFamily="sans-serif-light"
+        android:paddingLeft="40dp"
+        android:paddingTop="2dp"
+        android:text="Tap to navigate"
+        android:textColor="#fcfcfc"
+        android:textSize="32sp"
+        android:textStyle="italic" />
+
+    <TextView
+        android:id="@+id/label_dismiss"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        
+        android:layout_alignParentBottom="true" 
+        android:layout_centerHorizontal="true"
+        
+        android:fontFamily="sans-serif-light"
+        android:paddingBottom="50dp"
+        android:text="(Tap anywhere to dismiss)"
+        android:textColor="#fcfcfc"
+        android:textSize="24sp"
+        android:textStyle="italic" />
+
+</RelativeLayout>
