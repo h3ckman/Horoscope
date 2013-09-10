@@ -74,6 +74,8 @@ public class MainActivity extends Activity {
 	private String[] menuItems;
 	public static HashMap<String, Horoscope> horoscopeMap = new HashMap<String, Horoscope>();
 	public static ArrayList<HashMap<String, Horoscope>> entryList = new ArrayList<HashMap<String, Horoscope>>();
+	public static Horoscope currentHoroscope;
+	public String sign = "Scorpio";
 	ProgressDialog pDialog;
 	SharedPreferences settings;
 	String userSign;
@@ -104,7 +106,7 @@ public class MainActivity extends Activity {
 		settings = getSharedPreferences(PREFS_NAME, 0);
 		firstLaunch = settings.getBoolean("firstrun", true);
 		if (firstLaunch) {
-			selectItem(getResources().getString(R.string.action_help), -1);
+			// selectItem(getResources().getString(R.string.action_help), -1);
 			onCoachMark();
 			if(haveInternet(this)) {
 				LoadHoroscopes loadHoroscopes = new LoadHoroscopes(this);
@@ -114,7 +116,7 @@ public class MainActivity extends Activity {
 				showSettingsAlert();
 			}
 		}
-		
+
 		// If not first run, load stuff
 		else {
 			// Load user and entries
@@ -124,8 +126,8 @@ public class MainActivity extends Activity {
 			DateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy");
 			//get current date time with Date()
 			Date date = new Date();
-			
-			// If the saved horoscopes = today's date, don't refresh
+
+			// If the saved horoscopes equals today's date, don't refresh
 			if(!(dateFormat.format(horoscopeMap.get("Pisces").date).equals(dateFormat.format(date)))) {
 				if(haveInternet(this)) {
 					LoadHoroscopes loadHoroscopes = new LoadHoroscopes(this);
@@ -145,24 +147,24 @@ public class MainActivity extends Activity {
 	}
 
 	private void getHoroscopeData() {
-		// Get shared preferences (user's sign)
+		// Get user's sign from shared preferences
 		userSign = settings.getString(PREFS_NAME, "");
 
-		// Get horoscope entries
-		File file = new File(this.getFilesDir(),"entryList");
+		// Get horoscope entries by reading from internal storage
 		try {
+			File file = new File(this.getFilesDir(),"entryList");
 			FileInputStream fis = new FileInputStream(file);
 			ObjectInputStream ois = new ObjectInputStream(fis);
 			entryList = (ArrayList<HashMap<String, Horoscope>>) ois.readObject();
 			ois.close();
-			
+
+			// Get the newest entry
 			horoscopeMap = entryList.get(entryList.size()-1);
-			Log.w("Entry List Read", entryList.get(0).get("Pisces").description);
 		}
 		catch(Exception e) {
 			Log.e("No Data", "No stored data to retrieve");
 		}
-		
+
 	}
 
 	/**
@@ -258,7 +260,9 @@ public class MainActivity extends Activity {
 			if(!horoscopeMap.isEmpty()) {
 				settings.edit().putBoolean("firstrun", false).commit();
 				firstLaunch=false;
-			}	
+				currentHoroscope = horoscopeMap.get(sign);
+				selectItem(currentHoroscope.sign, currentHoroscope.id);
+			}
 		}
 	}
 
@@ -284,8 +288,8 @@ public class MainActivity extends Activity {
 					"drawable", this.getPackageName());
 
 			NsMenuItemModel mItem = new NsMenuItemModel(id_title, id_icon);
-			if (res==1) mItem.counter=12; //it is just an example...
-			if (res==3) mItem.counter=3; //it is just an example...
+			//if (res==1) mItem.counter=12; //it is just an example...
+			//if (res==3) mItem.counter=3; //it is just an example...
 			mAdapter.addItem(mItem);
 			res++;
 		}
@@ -356,10 +360,22 @@ public class MainActivity extends Activity {
 		 * ActionBarDrawerToggle will take care of this.
 		 */
 		if (mDrawerToggle.onOptionsItemSelected(item)) {
+
 			return true;
 		}
 
-		// Handle your other action bar items...
+		switch (item.getItemId()) {
+		case R.id.action_refresh:
+			if(haveInternet(this)) {
+				LoadHoroscopes loadHoroscopes = new LoadHoroscopes(this);
+				loadHoroscopes.execute();
+			}
+			else {
+				showSettingsAlert();
+			}
+			return true;
+		}
+
 		return super.onOptionsItemSelected(item);
 	}
 
@@ -397,10 +413,12 @@ public class MainActivity extends Activity {
 			String item = ((TextView) view
 					.findViewById(R.id.menurow_title)).getText().toString();
 
+
 			if(horoscopeMap.isEmpty()) {
 				showSettingsAlert();
 			}
 			else {
+				currentHoroscope = horoscopeMap.get(item);
 				selectItem(item, position);
 			}
 		}
@@ -409,29 +427,33 @@ public class MainActivity extends Activity {
 	private void selectItem(String item, int position) {
 
 		// Check if clicked item is a sign
-		try
-		{
-			String arrayItem = getResources().getStringArray(R.array.ns_menu_items)[position-1]; // Throws out of bounds exception if not sign
+		if(horoscopeMap.containsKey(item)) {
+			try
+			{
+				String arrayItem = getResources().getStringArray(R.array.ns_menu_items)[position-1]; // Throws out of bounds exception if not sign
 
-			Log.w("item", item);
-			Log.w("pos", ""+position);
+				// Get the horoscope for the sign
+				sign = item;
+				Horoscope selected = horoscopeMap.get(item);
 
-			// Get the horoscope for the sign
-			Horoscope selected = horoscopeMap.get(item);
+				Fragment fragment = new HoroscopeFragment();
+				Bundle args = new Bundle();
+				args.putSerializable(HoroscopeFragment.ARG_HOROSCOPE, selected);
+				fragment.setArguments(args);
 
-			Fragment fragment = new HoroscopeFragment();
-			Bundle args = new Bundle();
-			args.putSerializable(HoroscopeFragment.ARG_HOROSCOPE, selected);
-			fragment.setArguments(args);
+				FragmentManager fragmentManager = getFragmentManager();
+				fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 
-			FragmentManager fragmentManager = getFragmentManager();
-			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
+				getActionBar().setSubtitle(item);
+			}
 
-			getActionBar().setSubtitle(item);
+			// If not a sign, launch settings
+			catch(ArrayIndexOutOfBoundsException e) {
+
+			}
 		}
-
-		// If not a sign, launch settings
-		catch(ArrayIndexOutOfBoundsException e) {
+		else {
+			/*
 			Log.w("Settings", "Settings clicked");
 			Fragment fragment = new HelpFragment();
 			Bundle args = new Bundle();
@@ -442,8 +464,10 @@ public class MainActivity extends Activity {
 			fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 
 			getActionBar().setSubtitle(item);
-		}
+			 */
 
+			onCoachMark();
+		}
 
 		// Highlight the selected item and close the drawer
 		mDrawerList.setItemChecked(position, true);
@@ -499,25 +523,25 @@ public class MainActivity extends Activity {
 		// Showing Alert Message
 		alertDialog.show();
 	}
-	
+
 	public void onCoachMark(){
 
-	    //final Dialog dialog = new Dialog(this);
-	    final Dialog dialog = new Dialog(this, android.R.style.Theme_Translucent_NoTitleBar);
+		//final Dialog dialog = new Dialog(this);
+		final Dialog dialog = new Dialog(this, android.R.style.Theme_Translucent_NoTitleBar);
 
-	    dialog.setContentView(R.layout.coach_mark);
-	    dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
-	    
-	    
-	    dialog.setCanceledOnTouchOutside(true);
-	    //for dismissing anywhere you touch
-	    View masterView = dialog.findViewById(R.id.coach_mark_master_view);
-	    masterView.setOnClickListener(new View.OnClickListener() {
-	        @Override
-	        public void onClick(View view) {
-	            dialog.dismiss();
-	        }
-	    });
-	    dialog.show();
+		dialog.setContentView(R.layout.coach_mark);
+		dialog.getWindow().setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+
+
+		dialog.setCanceledOnTouchOutside(true);
+		//for dismissing anywhere you touch
+		View masterView = dialog.findViewById(R.id.coach_mark_master_view);
+		masterView.setOnClickListener(new View.OnClickListener() {
+			@Override
+			public void onClick(View view) {
+				dialog.dismiss();
+			}
+		});
+		dialog.show();
 	}
 }

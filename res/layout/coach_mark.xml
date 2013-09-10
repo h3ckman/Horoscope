@@ -3,44 +3,84 @@
     android:id="@+id/coach_mark_master_view"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:background="#ac000000" >
+    android:background="#da000000" >
 
     <ImageView
-        android:id="@+id/arrowTop"
-        android:layout_width="104dp"
-        android:layout_height="100dp"
+        android:id="@+id/arrowTopLeft"
+        android:layout_width="100dp"
+        android:layout_height="92dp"
         android:alpha=".65"
-        android:paddingLeft="50dp"
-        android:paddingTop="15dp"
+        android:paddingLeft="25dp"
+        android:paddingTop="50dp"
         android:scaleType="fitXY"
-        android:src="@drawable/arrow1" />
+        android:src="@drawable/arrow_curve_left" />
 
     <TextView
-        android:id="@+id/label_nav"
+        android:id="@+id/labelNav"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/arrowTop"
+        android:layout_toRightOf="@+id/arrowTopLeft"
+        android:alpha=".65"
         android:fontFamily="sans-serif-light"
-        android:paddingLeft="40dp"
-        android:paddingTop="2dp"
-        android:text="Tap to navigate"
+        android:paddingLeft="10dp"
+        android:paddingTop="75dp"
+        android:text="Tap to navigate\nhoroscopes"
         android:textColor="#fcfcfc"
-        android:textSize="32sp"
+        android:textSize="20dp"
         android:textStyle="italic" />
+
+    <ImageView
+        android:id="@+id/arrowTopRight"
+        android:layout_width="80dp"
+        android:layout_height="145dp"
+        android:layout_alignParentRight="true"
+        android:alpha=".65"
+        android:paddingRight="30dp"
+        android:paddingTop="46dp"
+        android:scaleType="fitXY"
+        android:src="@drawable/arrow_tilt_right" />
+
+    <TextView
+        android:id="@+id/labelRefresh"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/arrowTopRight"
+        android:alpha=".65"
+        android:fontFamily="sans-serif-light"
+        android:paddingRight="15dp"
+        android:paddingTop="5dp"
+        android:text="Tap to force\na refresh"
+        android:textColor="#fcfcfc"
+        android:textSize="20dp"
+        android:textStyle="italic" />
+
+    <TextView
+        android:id="@+id/label_tutorial"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/label_dismiss"
+        android:layout_centerHorizontal="true"
+        android:paddingBottom="2dp"
+        android:alpha=".55"
+        android:fontFamily="sans-serif-light"
+        android:text="Quick Tutorial"
+        android:textColor="#fcfcfc"
+        android:textSize="38dp"
+        android:textStyle="normal" />
 
     <TextView
         android:id="@+id/label_dismiss"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        
-        android:layout_alignParentBottom="true" 
+         android:layout_marginBottom="140dp"
         android:layout_centerHorizontal="true"
-        
-        android:fontFamily="sans-serif-light"
-        android:paddingBottom="50dp"
-        android:text="(Tap anywhere to dismiss)"
+        android:layout_alignParentBottom="true"
+        android:alpha=".55"
+        android:fontFamily="sans-serif"
+        android:text="(Tap to dismiss)"
         android:textColor="#fcfcfc"
-        android:textSize="24sp"
-        android:textStyle="italic" />
+        android:textSize="14dp"
+        android:textStyle="normal" />
 
 </RelativeLayout>

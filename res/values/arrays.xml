@@ -32,15 +32,11 @@
     </array>
 
     <string-array name="ns_menu_items_2">
-        <item>action_favorites</item>
         <item>action_help</item>
-        <item>action_settings</item>
     </string-array>
 
     <array name="ns_menu_items_icon_2">
-        <item>ic_action_favorites</item>
         <item>ic_action_help</item>
-        <item>ic_action_settings</item>
     </array>
 
     <string-array name="sign_dates">
