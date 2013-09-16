@@ -30,7 +30,9 @@
     <string name="menu_aquarius">Aquarius</string>
     <string name="menu_pisces">Pisces</string>
     
-    
+    <string name="menu_today">Today</string>
+    <string name="menu_weekly">Weekly</string>
+    <string name="menu_monthly">Monthly</string>
     
     <string name="help_title">Welcome!</string>
     <string name="help_description">Thanks for downloading Horoscope by HeckMobile! This app focuses on simplicity and functionality without any of the frills, annoying ads, underlying motives, and bizarre permissions that come with similar apps. Everything stays themed as close to Google\'s defaults as possible. 

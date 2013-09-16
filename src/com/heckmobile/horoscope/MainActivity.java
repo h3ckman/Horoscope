@@ -26,6 +26,8 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.app.ActionBar;
+import android.app.ActionBar.OnNavigationListener;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -38,7 +40,8 @@ import android.view.Menu;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.app.Activity;
+import android.widget.AdapterView;
+import android.widget.AdapterView.OnItemSelectedListener;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -48,18 +51,19 @@ import android.graphics.drawable.ColorDrawable;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.Window;
-import android.widget.AdapterView;
-import android.widget.ListAdapter;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.SimpleAdapter;
+import android.widget.Spinner;
+import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
 public class MainActivity extends Activity {
 
 	// URL to pull data from
-	static final String URL = "http://www.astrology.com/horoscopes/daily-extended.rss";
+	static final String DAILYURL = "http://www.astrology.com/horoscopes/daily-extended.rss";
+	static final String WEEKLYURL = "http://www.astrology.com/horoscopes/weekly-overview.rss";
+	static final String MONTHLYURL = "http://www.astrology.com/horoscopes/monthly-overview.rss";
 
 	// XML node keys
 	static final String KEY_ITEM = "item"; // parent node
@@ -71,15 +75,21 @@ public class MainActivity extends Activity {
 	private ListView mDrawerList;
 	private DrawerLayout mDrawer;
 	private CustomActionBarDrawerToggle mDrawerToggle;
+	private MenuItem actionDate;
 	private String[] menuItems;
 	public static HashMap<String, Horoscope> horoscopeMap = new HashMap<String, Horoscope>();
-	public static ArrayList<HashMap<String, Horoscope>> entryList = new ArrayList<HashMap<String, Horoscope>>();
+	public static HashMap<String, HashMap<String, Horoscope>> entryList = new HashMap<String, HashMap<String, Horoscope>>();
+	//public static ArrayList<HashMap<String, Horoscope>> entryList = new ArrayList<HashMap<String, Horoscope>>();
 	public static Horoscope currentHoroscope;
-	public String sign = "Scorpio";
+	public static String currentSign = "Scorpio";
+	public static int lastSign;
+	public static String currentUrl = DAILYURL;
+	public Spinner actionBarSpinner;
 	ProgressDialog pDialog;
 	SharedPreferences settings;
 	String userSign;
 	boolean firstLaunch;
+	Date todaysDate = new Date();
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -89,12 +99,16 @@ public class MainActivity extends Activity {
 		// Enable ActionBar app icon to behave as action to toggle nav drawer
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		getActionBar().setHomeButtonEnabled(true);
-		getActionBar().setSubtitle("Your Daily Horoscope");
+
+		// Set up the action bar to show a dropdown list.
+		getActionBar().setNavigationMode(ActionBar.NAVIGATION_MODE_LIST);
+		ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this, R.array.menu_date, R.layout.actionbar_spinner);
+		adapter.setDropDownViewResource(R.layout.actionbar_spinner_item);
+		getActionBar().setListNavigationCallbacks(adapter, new onNavigationItemSelected());
 
 		mDrawer = (DrawerLayout) findViewById(R.id.drawer_layout);
 
-		// Set a custom shadow that overlays the main content when the drawer
-		// opens
+		// Set a custom shadow that overlays the main content when the drawer opens
 		mDrawer.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
 
 		// Initialize drawer
@@ -105,44 +119,41 @@ public class MainActivity extends Activity {
 		// Check if first run
 		settings = getSharedPreferences(PREFS_NAME, 0);
 		firstLaunch = settings.getBoolean("firstrun", true);
-		if (firstLaunch) {
-			// selectItem(getResources().getString(R.string.action_help), -1);
-			onCoachMark();
-			if(haveInternet(this)) {
-				LoadHoroscopes loadHoroscopes = new LoadHoroscopes(this);
-				loadHoroscopes.execute();
-			}
-			else {
-				showSettingsAlert();
-			}
-		}
 
-		// If not first run, load stuff
-		else {
-			// Load user and entries
-			Horoscope h;
+		if (firstLaunch) {
+			// Show tutorial if first run
+			onCoachMark();
+		}	
+	}
+
+	// On click listener for action bar dropdown, loads first item immediately
+	private class onNavigationItemSelected implements OnNavigationListener {
+
+		@Override
+		public boolean onNavigationItemSelected(int position, long itemId) {
+			boolean hasData = false;
+			DateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy");
+			switch(position) {
+			case 0:
+				currentUrl = DAILYURL;
+				break;
+			case 1:
+				currentUrl = WEEKLYURL;
+				break;
+			case 2:
+				currentUrl = MONTHLYURL;
+				dateFormat = new SimpleDateFormat("MMM yyyy");
+				break;
+			}
+
 			getHoroscopeData();
 
-			DateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy");
-			//get current date time with Date()
-			Date date = new Date();
+			/*
+				if((dateFormat.format(horoscopeMap.get(currentSign).date).equals(dateFormat.format(todaysDate)))) {
 
-			// If the saved horoscopes equals today's date, don't refresh
-			if(!(dateFormat.format(horoscopeMap.get("Pisces").date).equals(dateFormat.format(date)))) {
-				if(haveInternet(this)) {
-					LoadHoroscopes loadHoroscopes = new LoadHoroscopes(this);
-					loadHoroscopes.execute();
 				}
-			}
-
-			if(!userSign.isEmpty()) {
-				h = horoscopeMap.get(userSign);
-				selectItem(h.sign, h.id);
-			}
-			else {
-				h = horoscopeMap.get("Scorpio");
-				selectItem(h.sign, h.id);
-			}			
+			 */
+			return false;
 		}
 	}
 
@@ -150,22 +161,37 @@ public class MainActivity extends Activity {
 		// Get user's sign from shared preferences
 		userSign = settings.getString(PREFS_NAME, "");
 
-		// Get horoscope entries by reading from internal storage
 		try {
+			// Get horoscope entries by reading from internal storage
 			File file = new File(this.getFilesDir(),"entryList");
 			FileInputStream fis = new FileInputStream(file);
 			ObjectInputStream ois = new ObjectInputStream(fis);
-			entryList = (ArrayList<HashMap<String, Horoscope>>) ois.readObject();
+			entryList = (HashMap<String, HashMap<String, Horoscope>>) ois.readObject();
 			ois.close();
 
-			// Get the newest entry
-			horoscopeMap = entryList.get(entryList.size()-1);
+			// Get the correct entry if it exists
+			if(entryList.containsKey(currentUrl)) {
+				horoscopeMap = entryList.get(currentUrl);
+				currentHoroscope = horoscopeMap.get(currentSign);
+				// TODO Add check for latest horoscope
+				selectItem(currentHoroscope.sign, currentHoroscope.id);
+			}
+			
+			// Otherwise, call loader
+			else {
+				LoadHoroscopes loadHoroscopes = new LoadHoroscopes(MainActivity.this);
+				loadHoroscopes.execute();
+			}	
 		}
+		
+		// If no data to read from storage, call loader
 		catch(Exception e) {
-			Log.e("No Data", "No stored data to retrieve");
+			Log.e("No Data", "No stored file to retrieve");
+			LoadHoroscopes loadHoroscopes = new LoadHoroscopes(MainActivity.this);
+			loadHoroscopes.execute();
 		}
-
 	}
+
 
 	/**
 	 * Background Async Task to load horoscopes
@@ -194,59 +220,54 @@ public class MainActivity extends Activity {
 		/**
 		 * Get all Places as JSON file
 		 * */
+		@Override
 		protected String doInBackground(Object... args) {
-			if(haveInternet(this.context)) {
-				try {
-					XmlParser parser = new XmlParser();
-					String xml = parser.getXmlFromUrl(URL); // getting XML
-					Document doc = parser.getDomElement(xml); // getting DOM element
+			try {
+				XmlParser parser = new XmlParser();
+				String xml = parser.getXmlFromUrl(currentUrl); // getting XML
+				Document doc = parser.getDomElement(xml); // getting DOM element
 
-					NodeList nl = doc.getElementsByTagName(KEY_ITEM);
+				NodeList nl = doc.getElementsByTagName(KEY_ITEM);
 
-					// Looping through all item nodes <item>
-					for (int i = 0; i < nl.getLength(); i++) {
+				// Looping through all item nodes <item>
+				for (int i = 0; i < nl.getLength(); i++) {
 
-						Element e = (Element) nl.item(i);
+					Element e = (Element) nl.item(i);
 
-						// Get each sign's information
-						String sign = parser.getValue(e, KEY_SIGN); // title child value
-						String date = parser.getValue(e, KEY_DATE); // date child value
-						String description = parser.getValue(e, KEY_DESC); // description child value
+					// Get each sign's information
+					String sign = parser.getValue(e, KEY_SIGN); // title child value
+					String date = parser.getValue(e, KEY_DATE); // date child value
+					String description = parser.getValue(e, KEY_DESC); // description child value
 
-						// Get the name of the sign (trim the rest)
-						sign = sign.substring(0, sign.indexOf(" "));
+					// Get the name of the sign (trim the rest)
+					sign = sign.substring(0, sign.indexOf(" "));
 
-						// Trim the description to emit links and remove html tags
-						description = description.substring(0, description.indexOf("<p>More horoscopes!"));
-						description = Html.fromHtml(description).toString();
+					// Trim the description to emit links and remove html tags
+					description = description.substring(0, description.indexOf("<p>More horoscopes!"));
+					description = Html.fromHtml(description).toString();
 
-						// Convert the String date to Date
-						Date formatDate = new SimpleDateFormat("EEE, dd MMM yyyy", Locale.ENGLISH).parse(date);
+					// Convert the String date to Date
+					Date formatDate = new SimpleDateFormat("EEE, dd MMM yyyy", Locale.ENGLISH).parse(date);
 
-						Horoscope horoscope = new Horoscope(i, sign, formatDate, description);
+					Horoscope horoscope = new Horoscope(i, sign, formatDate, description);
 
-						// Store in HashMap
-						horoscopeMap.put(sign, horoscope);
-					}
-
-					if(entryList.size() == 2) {
-						HashMap <String, Horoscope> tempMap = entryList.remove(1);
-						entryList.clear();
-						entryList.add(tempMap);
-					}
-					entryList.add(horoscopeMap);
-					Log.w("List Size", "Entry list size = "+entryList.size());
-
-					File file = new File(this.context.getFilesDir(),"entryList");   
-					ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
-					outputStream.writeObject(entryList);
-					outputStream.flush();
-					outputStream.close();
-
-				} catch (Exception e) {
-					e.printStackTrace();
+					// Store in HashMap
+					horoscopeMap.put(sign, horoscope);
 				}
+
+				entryList.put(currentUrl, horoscopeMap);
+				Log.w("List Size", "Entry list size = "+entryList.size());
+
+				File file = new File(this.context.getFilesDir(),"entryList");   
+				ObjectOutputStream outputStream = new ObjectOutputStream(new FileOutputStream(file));
+				outputStream.writeObject(entryList);
+				outputStream.flush();
+				outputStream.close();
+
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
+
 			return null;
 		}
 
@@ -254,19 +275,23 @@ public class MainActivity extends Activity {
 		 * After completing background task dismiss the progress dialog and show
 		 * the data 
 		 * **/
-
+		@Override
 		protected void onPostExecute(Object result) {
 			pDialog.dismiss();
 			if(!horoscopeMap.isEmpty()) {
 				settings.edit().putBoolean("firstrun", false).commit();
 				firstLaunch=false;
-				currentHoroscope = horoscopeMap.get(sign);
+				currentHoroscope = horoscopeMap.get(currentSign);
 				selectItem(currentHoroscope.sign, currentHoroscope.id);
+			}
+			else {
+				showSettingsAlert();
 			}
 		}
 	}
 
 	private void _initMenu() {
+
 		NsMenuAdapter mAdapter = new NsMenuAdapter(this);
 
 		// Add Header
@@ -293,6 +318,8 @@ public class MainActivity extends Activity {
 			mAdapter.addItem(mItem);
 			res++;
 		}
+		lastSign = res;
+
 
 		mAdapter.addHeader(R.string.ns_menu_main_header2);
 
@@ -341,6 +368,8 @@ public class MainActivity extends Activity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.main, menu);
+
+
 		return super.onCreateOptionsMenu(menu);
 	}
 
@@ -373,6 +402,7 @@ public class MainActivity extends Activity {
 			else {
 				showSettingsAlert();
 			}
+
 			return true;
 		}
 
@@ -413,45 +443,46 @@ public class MainActivity extends Activity {
 			String item = ((TextView) view
 					.findViewById(R.id.menurow_title)).getText().toString();
 
-
-			if(horoscopeMap.isEmpty()) {
-				showSettingsAlert();
-			}
-			else {
-				currentHoroscope = horoscopeMap.get(item);
-				selectItem(item, position);
-			}
+			selectItem(item, position);
 		}
 	}
 
 	private void selectItem(String item, int position) {
 
 		// Check if clicked item is a sign
-		if(horoscopeMap.containsKey(item)) {
-			try
-			{
-				String arrayItem = getResources().getStringArray(R.array.ns_menu_items)[position-1]; // Throws out of bounds exception if not sign
+		if(position <= lastSign) {
+			if(!horoscopeMap.isEmpty()) {
+				try
+				{
+					currentHoroscope = horoscopeMap.get(item);
 
-				// Get the horoscope for the sign
-				sign = item;
-				Horoscope selected = horoscopeMap.get(item);
+					String arrayItem = getResources().getStringArray(R.array.ns_menu_items)[position-1]; // Throws out of bounds exception if not sign
 
-				Fragment fragment = new HoroscopeFragment();
-				Bundle args = new Bundle();
-				args.putSerializable(HoroscopeFragment.ARG_HOROSCOPE, selected);
-				fragment.setArguments(args);
+					// Get the horoscope for the sign
+					currentSign = item;
+					Horoscope selected = horoscopeMap.get(item);
 
-				FragmentManager fragmentManager = getFragmentManager();
-				fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
+					Fragment fragment = new HoroscopeFragment();
+					Bundle args = new Bundle();
+					args.putSerializable(HoroscopeFragment.ARG_HOROSCOPE, selected);
+					fragment.setArguments(args);
 
-				getActionBar().setSubtitle(item);
+					FragmentManager fragmentManager = getFragmentManager();
+					fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
+
+					getActionBar().setSubtitle(item);
+				}
+
+				// If not a sign, launch settings
+				catch(ArrayIndexOutOfBoundsException e) {
+
+				}
 			}
-
-			// If not a sign, launch settings
-			catch(ArrayIndexOutOfBoundsException e) {
-
+			else {
+				showSettingsAlert();
 			}
 		}
+
 		else {
 			/*
 			Log.w("Settings", "Settings clicked");

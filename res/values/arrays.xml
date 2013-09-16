@@ -31,6 +31,12 @@
         <item>ic_pisces</item>
     </array>
 
+    <string-array name="menu_date">
+            <item>Today</item>
+            <item>Weekly</item>
+            <item>Monthly</item>
+    </string-array>
+    
     <string-array name="ns_menu_items_2">
         <item>action_help</item>
     </string-array>

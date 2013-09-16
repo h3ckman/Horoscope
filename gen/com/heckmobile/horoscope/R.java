@@ -9,11 +9,12 @@ package com.heckmobile.horoscope;
 
 public final class R {
     public static final class array {
+        public static final int menu_date=0x7f040002;
         public static final int ns_menu_items=0x7f040000;
-        public static final int ns_menu_items_2=0x7f040002;
+        public static final int ns_menu_items_2=0x7f040003;
         public static final int ns_menu_items_icon=0x7f040001;
-        public static final int ns_menu_items_icon_2=0x7f040003;
-        public static final int sign_dates=0x7f040004;
+        public static final int ns_menu_items_icon_2=0x7f040004;
+        public static final int sign_dates=0x7f040005;
     }
     public static final class attr {
     }
@@ -55,38 +56,41 @@ public final class R {
         public static final int rectangle=0x7f020018;
     }
     public static final class id {
-        public static final int action_refresh=0x7f090016;
-        public static final int arrowTopLeft=0x7f090001;
-        public static final int arrowTopRight=0x7f090003;
-        public static final int coach_mark_master_view=0x7f090000;
-        public static final int content_frame=0x7f090007;
-        public static final int drawer=0x7f090008;
-        public static final int drawer_layout=0x7f090006;
-        public static final int help_button=0x7f09000d;
-        public static final int help_description=0x7f09000b;
-        public static final int help_dropdown=0x7f09000c;
-        public static final int help_title=0x7f090009;
-        public static final int horoscope_date=0x7f09000f;
-        public static final int horoscope_description=0x7f090010;
-        public static final int horoscope_title=0x7f09000e;
-        public static final int image=0x7f09000a;
-        public static final int labelNav=0x7f090002;
-        public static final int labelRefresh=0x7f090004;
-        public static final int label_dismiss=0x7f090005;
-        public static final int menu_divider=0x7f090015;
-        public static final int menurow_counter=0x7f090014;
-        public static final int menurow_icon=0x7f090012;
-        public static final int menurow_title=0x7f090013;
-        public static final int ns_menu_row=0x7f090011;
+        public static final int action_refresh=0x7f090017;
+        public static final int arrowTopLeft=0x7f090002;
+        public static final int arrowTopRight=0x7f090004;
+        public static final int coach_mark_master_view=0x7f090001;
+        public static final int content_frame=0x7f090008;
+        public static final int drawer=0x7f090009;
+        public static final int drawer_layout=0x7f090007;
+        public static final int help_button=0x7f09000e;
+        public static final int help_description=0x7f09000c;
+        public static final int help_dropdown=0x7f09000d;
+        public static final int help_title=0x7f09000a;
+        public static final int horoscope_date=0x7f090010;
+        public static final int horoscope_description=0x7f090011;
+        public static final int horoscope_title=0x7f09000f;
+        public static final int image=0x7f09000b;
+        public static final int labelNav=0x7f090003;
+        public static final int labelRefresh=0x7f090005;
+        public static final int label_dismiss=0x7f090006;
+        public static final int menu_divider=0x7f090016;
+        public static final int menurow_counter=0x7f090015;
+        public static final int menurow_icon=0x7f090013;
+        public static final int menurow_title=0x7f090014;
+        public static final int ns_menu_row=0x7f090012;
+        public static final int spinnerTarget=0x7f090000;
     }
     public static final class layout {
-        public static final int coach_mark=0x7f030000;
-        public static final int drawer_layout=0x7f030001;
-        public static final int fragment_help=0x7f030002;
-        public static final int fragment_horoscope=0x7f030003;
-        public static final int ns_menu_row=0x7f030004;
-        public static final int ns_menu_row_counter=0x7f030005;
-        public static final int ns_menu_row_header=0x7f030006;
+        public static final int actionbar_spinner=0x7f030000;
+        public static final int actionbar_spinner_item=0x7f030001;
+        public static final int coach_mark=0x7f030002;
+        public static final int drawer_layout=0x7f030003;
+        public static final int fragment_help=0x7f030004;
+        public static final int fragment_horoscope=0x7f030005;
+        public static final int ns_menu_row=0x7f030006;
+        public static final int ns_menu_row_counter=0x7f030007;
+        public static final int ns_menu_row_header=0x7f030008;
     }
     public static final class menu {
         public static final int main=0x7f080000;
@@ -101,8 +105,8 @@ public final class R {
         public static final int action_settings=0x7f060004;
         public static final int app_name=0x7f060000;
         public static final int drawer_text=0x7f060008;
-        public static final int help_description=0x7f06001b;
-        public static final int help_title=0x7f06001a;
+        public static final int help_description=0x7f06001e;
+        public static final int help_title=0x7f06001d;
         public static final int menu_aquarius=0x7f060018;
         public static final int menu_aries=0x7f06000e;
         public static final int menu_cancer=0x7f060011;
@@ -110,11 +114,14 @@ public final class R {
         public static final int menu_gemini=0x7f060010;
         public static final int menu_leo=0x7f060012;
         public static final int menu_libra=0x7f060014;
+        public static final int menu_monthly=0x7f06001c;
         public static final int menu_pisces=0x7f060019;
         public static final int menu_sagittarius=0x7f060016;
         public static final int menu_scorpio=0x7f060015;
         public static final int menu_taurus=0x7f06000f;
+        public static final int menu_today=0x7f06001a;
         public static final int menu_virgo=0x7f060013;
+        public static final int menu_weekly=0x7f06001b;
         public static final int ns_menu_close=0x7f06000d;
         public static final int ns_menu_main_header=0x7f06000a;
         public static final int ns_menu_main_header2=0x7f06000b;
